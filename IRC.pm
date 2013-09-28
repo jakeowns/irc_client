@@ -41,7 +41,7 @@ sub login {
     send( $sock, "JOIN #linux\r\n",                            0 );
 }
 
-sub get_in {
+sub read {
     my $self = shift;
     my $sock = $self->{_sock};
     while (<$sock>) {
@@ -54,7 +54,7 @@ sub get_in {
     }
 }
 
-sub msg {
+sub write {
     my $self = shift;
     my $sock = $self->{_sock};
     send( $sock, $_[0], 0 );
