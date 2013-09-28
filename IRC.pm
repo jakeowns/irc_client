@@ -3,44 +3,60 @@ use IO::Socket;
 use Socket qw(PF_INET SOCK_STREAM pack_sockaddr_in inet_aton);
 use strict;
 use warnings;
+
 sub new {
-	my($class, @args) = @_;
-	my$self = bless {}, $class;
-	return $self->_init(@args);
+    my ( $class, @args ) = @_;
+    my $self = bless {}, $class;
+    return $self->_init(@args);
 }
-#instance variables
-#+server
-#+port
-#+nickname
+
+sub DESTROY {
+    my $self = shift;
+    close( $self->{_sock} ) if $self->{_sock};
+}
+
 sub _init {
-	my$self = shift;
-	$self->{_server} = shift || "irc.freenode.net";
-	$self->{_port} = shift || 6667;
-	$self->{_nick} = shift || "meh";
-	socket(my $sock, PF_INET, SOCK_STREAM, 0)
-     or die "socket: $!";
-	$self->{_sock} = $sock;
-	return $self;
+    my $self = shift;
+    $self->{_server} = "irc.freenode.net";
+    $self->{_port}   = 6667;
+    $self->{_nick}   = "meh";
+    socket( my $sock, PF_INET, SOCK_STREAM, 0 )
+      or die "socket: $!";
+    $self->{_sock} = $sock;
+    return $self;
 }
-sub start_conn {
-	my$self = shift;
-	connect($self->{_sock}, pack_sockaddr_in($self->{_port}, inet_aton($self->{_server})))
-     or die "connect: $!";
-	login();
+
+sub connect {
+    my $self = shift;
+    connect( $self->{_sock},
+        pack_sockaddr_in( $self->{_port}, inet_aton( $self->{_server} ) ) )
+      or die "connect: $!";
 }
+
 sub login {
-	my$self = shift;
-	fh = $self->{_sock};
-	my($nick, $user, $chan) = ("NICK $self->{_nick}\r\n", "USER $self->{_nick} 8 * $self->{_nick}\r\n", "JOIN #linux\r\n");
-	send(fh, $nick);
-	send(fh, $user);
-	send(fh, $chan);
+    my $self = shift;
+    my $sock = $self->{_sock};
+    send( $sock, "NICK $self->{_nick}\r\n",                    0 );
+    send( $sock, "USER $self->{_nick} 8 * $self->{_nick}\r\n", 0 );
+    send( $sock, "JOIN #linux\r\n",                            0 );
 }
-sub rec_in {
-	my$self = shift;
-	my$fh = $self->{_sock};
-	while(<$fh>) {
-		return $_;
-	}
+
+sub get_in {
+    my $self = shift;
+    my $sock = $self->{_sock};
+    while (<$sock>) {
+        if (/^PING(.*)$/i) {
+            send( $sock, "PONG $1\r\n", 0 );
+        }
+        else {
+            return $_;
+        }
+    }
+}
+
+sub msg {
+    my $self = shift;
+    my $sock = $self->{_sock};
+    send( $sock, $_[0], 0 );
 }
 1;
