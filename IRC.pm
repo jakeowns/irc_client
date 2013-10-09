@@ -1,5 +1,4 @@
 package IRC;
-use IO::Socket;
 use Socket qw(PF_INET SOCK_STREAM pack_sockaddr_in inet_aton);
 use strict;
 use warnings;
@@ -17,12 +16,10 @@ sub DESTROY {
 
 sub _init {
     my $self = shift;
-    $self->{_server} = "irc.freenode.net";
-    $self->{_port}   = 6667;
-    $self->{_nick}   = "meh";
-    socket( my $sock, PF_INET, SOCK_STREAM, 0 )
-      or die "socket: $!";
-    $self->{_sock} = $sock;
+		$self->{_sock} = shift or die "no socket: $!";
+    $self->{_server} = shift || "irc.freenode.net";
+    $self->{_port}   = shift || 6667;
+    $self->{_nick}   = shift || "Guest123124";
     return $self;
 }
 
