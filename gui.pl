@@ -23,6 +23,9 @@ $mw->Button(
     -command => \&send_sock,
 )->pack;
 $mw->fileevent( $sock, 'readable', \&get );
+
+center_window($mw);
+
 MainLoop;
 
 sub send_sock {
@@ -40,5 +43,15 @@ sub write_t {
     my $str = shift;
     $t->insert( 'end', $str );
     $t->see('end');
+}
+
+sub center_window {
+    my ( $window ) = @_;
+    $window->update;
+    my $new_width = int(($window->screenwidth() - $window->width) / 2);
+    my $new_height = int(($window->screenheight() - $window->height) / 2);
+    $window->geometry($window->width . 'x' . $window->height . "+$new_width+$new_height");
+    $window->update;
+    return;
 }
 __END__
