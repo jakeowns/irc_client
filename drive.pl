@@ -15,13 +15,13 @@ my $sel = IO::Select->new;
 $sel->add($sock);
 $sel->add(\*STDIN);
 while(my @ready = $sel->can_read) {
-        foreach my $fh (@ready) {
-            if($fh == $sock) {
-							print $client->read;
-						} else {
-							$client->write(<stdin>."\r\n");
-						}
-				}
+	foreach my $fh (@ready) {
+		if($fh == $sock) {
+			print $client->read;
+		} else {
+			$client->write(<stdin>."\r\n");
+		}
+	}
 }
 exit 0;
 __END__
