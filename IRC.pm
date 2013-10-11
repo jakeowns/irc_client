@@ -9,14 +9,14 @@ sub new {
     return $self->_init(@args);
 }
 
-sub DESTROY {
-    my $self = shift;
-    close( $self->{_sock} ) if $self->{_sock};
-}
+#sub DESTROY {
+    #my $self = shift;
+    #close( $self->{_sock} ) if $self->{_sock};
+#}
 
 sub _init {
     my $self = shift;
-		$self->{_sock} = shift or die "no socket: $!";
+    $self->{_sock} = shift or die "no socket: $!";
     $self->{_server} = shift || "irc.freenode.net";
     $self->{_port}   = shift || 6667;
     $self->{_nick}   = shift || "Guest123124";
@@ -35,7 +35,7 @@ sub login {
     my $sock = $self->{_sock};
     send( $sock, "NICK $self->{_nick}\r\n",                    0 );
     send( $sock, "USER $self->{_nick} 8 * $self->{_nick}\r\n", 0 );
-    send( $sock, "JOIN #linux\r\n",                            0 );
+    send( $sock, "JOIN #mehfoo\r\n",                            0 );
 }
 
 sub read {
