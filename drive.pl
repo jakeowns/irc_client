@@ -6,10 +6,11 @@ use Socket qw(PF_INET SOCK_STREAM);
 use IO::Select;
 socket( my $sock, PF_INET, SOCK_STREAM, 0 )
   or die "socket: $!";
-my $nick = join( '', map { ( "a" .. "z" )[ rand 26 ] } 1 .. 8 );
-my $client = IRC->new( $sock, "irc.freenode.net", 6667, $nick );
+my $client =
+  IRC->new( { sock => $sock, server => "irc.freenode.net", port => 6667 } );
 $client->connect;
-$client->login;
+
+#$client->login;
 
 my $sel = IO::Select->new;
 $sel->add($sock);
