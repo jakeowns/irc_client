@@ -19,6 +19,10 @@ my $client = IRC->new(
 #$client->join_chan;
 
 my $mw        = new MainWindow;
+$mw->title("IRC Client");
+$mw->geometry("500x450");
+
+#Menu
 my $main_menu = $mw->Menu();
 $mw->configure( -menu => $main_menu );
 my $file_menu =
@@ -33,18 +37,21 @@ $file_menu->command(
     -underline => 0,
     -command   => sub { exit }
 );
-$mw->title("IRC Client");
-$mw->geometry("500x450");
-my $t = $mw->Text( -state => 'disabled' )
-  ->pack( -fill => 'both', -expand => 1, -side => 'top' );
+#Menu END
+
+my $scrollbar = $mw->Scrollbar();
+my $t = $mw->Text( -state => 'disabled', -yscrollcommand => ['set' => $scrollbar] );
+$scrollbar->configure(-command => ['yview' => $t]);
+$scrollbar->pack(-side => 'right', -fill => 'y');
+$t->pack( -fill => 'both', -expand => 1, -side => 'top' );
 my $entry = $mw->Entry()->pack( -side => 'left', -fill => 'x', -expand => 1 );
-$entry->focus();
-$entry->bind( '<Return>', \&send_sock );
 $mw->Button(
     -text    => 'Send',
     -command => \&send_sock,
 )->pack;
 
+$entry->bind( '<Return>', \&send_sock );
+$entry->focus();
 center_window($mw);
 
 MainLoop;
@@ -83,4 +90,5 @@ sub center_window {
     $window->update;
     return;
 }
+
 __END__
