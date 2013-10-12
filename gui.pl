@@ -14,10 +14,25 @@ my $client = IRC->new(
         channel => ['#perl']
     }
 );
-$client->connect;
-$client->join_chan;
 
-my $mw = new MainWindow;
+#$client->connect;
+#$client->join_chan;
+
+my $mw        = new MainWindow;
+my $main_menu = $mw->Menu();
+$mw->configure( -menu => $main_menu );
+my $file_menu =
+  $main_menu->cascade( -label => "File", -underline => 0, -tearoff => 0 );
+$file_menu->command(
+    -label     => "Connect",
+    -underline => 0,
+    -command   => \&menu_connect
+);
+$file_menu->command(
+    -label     => "Exit",
+    -underline => 0,
+    -command   => sub { exit }
+);
 $mw->title("IRC Client");
 $mw->geometry("500x450");
 my $t = $mw->Text( -state => 'disabled' )
@@ -29,11 +44,15 @@ $mw->Button(
     -text    => 'Send',
     -command => \&send_sock,
 )->pack;
-$mw->fileevent( $sock, 'readable', \&get );
 
 center_window($mw);
 
 MainLoop;
+
+sub menu_connect {
+    $client->connect;
+    $mw->fileevent( $sock, 'readable', \&get );
+}
 
 sub send_sock {
     my $cmd = $entry->get() . "\n";
@@ -42,7 +61,8 @@ sub send_sock {
     $entry->delete( 0, length($entry) );
 }
 
-sub get {
+sub { $client->connect }
+  ub get {
     write_t( $client->read );
 }
 
