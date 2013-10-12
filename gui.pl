@@ -61,8 +61,7 @@ sub send_sock {
     $entry->delete( 0, length($entry) );
 }
 
-sub { $client->connect }
-  ub get {
+sub get {
     write_t( $client->read );
 }
 
