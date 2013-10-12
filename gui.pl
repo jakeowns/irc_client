@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use Tk;
+use Tk::DynaTabFrame;
 use IRC;
 use Socket qw(PF_INET SOCK_STREAM);
 socket( my $sock, PF_INET, SOCK_STREAM, 0 )
@@ -20,10 +21,6 @@ my $client = IRC->new(
 
 my $mw        = new MainWindow;
 my $main_menu = $mw->Menu();
-$main_menu->configure(
-    -foreground => 'gray',
-    -background => 'black',
-);
 $mw->geometry("500x450");
 $mw->configure( -menu => $main_menu, );
 my $file_menu = $main_menu->cascade(
@@ -42,14 +39,21 @@ $file_menu->command(
     -command   => sub { exit }
 );
 $mw->title("IRC Client");
-my $t = $mw->Scrolled(
+my $tab_mw =
+  $mw->DynaTabFrame()->pack( -side => 'top', -expand => 1, -fill => 'both' );
+my $tab_1 = $tab_mw->add(
+    -caption  => 'Tab 1',
+    -tabcolor => 'red',
+    -hidden   => 0
+);
+my $t = $tab_1->Scrolled(
     'Text',
     -scrollbars => 'osoe',
     -foreground => 'gray',
     -background => 'black',
     -wrap       => 'word',
     -state      => 'disabled'
-)->pack( -fill => 'both', -expand => 1, -side => 'top', -anchor => 'w' );
+)->pack( -fill => 'both', -expand => 1, -side => 'top', -anchor => 'nw' );
 
 my $entry = $mw->Entry()->pack(
     -side   => 'left',
@@ -76,7 +80,7 @@ sub send_sock {
     my $cmd = $entry->get() . "\n";
     write_t("$cmd");
     $client->write($cmd);
-    $entry->delete( 0, length($entry) );
+    $entry->delete( 0, 'end' );
 }
 
 sub get {
@@ -103,3 +107,11 @@ sub center_window {
     return;
 }
 __END__
+my $t = $mw->Scrolled(
+    'Text',
+    -scrollbars => 'osoe',
+    -foreground => 'gray',
+    -background => 'black',
+    -wrap       => 'word',
+    -state      => 'disabled'
+)->pack( -fill => 'both', -expand => 1, -side => 'top', -anchor => 'w' );
