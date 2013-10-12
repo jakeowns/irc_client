@@ -1,25 +1,27 @@
 package IRC;
-use Socket qw(PF_INET SOCK_STREAM pack_sockaddr_in inet_aton);
+use Socket qw(pack_sockaddr_in inet_aton);
 use strict;
 use warnings;
 
 sub new {
-    my ( $class, @args ) = @_;
+    my ( $class, $args ) = @_;
     my $self = bless {}, $class;
-    return $self->_init(@args);
+    return $self->_init($args);
 }
 
 #sub DESTROY {
-    #my $self = shift;
-    #close( $self->{_sock} ) if $self->{_sock};
+#my $self = shift;
+#close( $self->{_sock} ) if $self->{_sock};
 #}
 
 sub _init {
-    my $self = shift;
-    $self->{_sock} = shift or die "no socket: $!";
-    $self->{_server} = shift || "irc.freenode.net";
-    $self->{_port}   = shift || 6667;
-    $self->{_nick}   = shift || "Guest123124";
+    my ( $self, $args ) = @_;
+    $self->{_sock}   = $args->{sock}    || die "no socket: $!";
+    $self->{_server} = $args->{server}  || "irc.freenode.net";
+    $self->{_port}   = $args->{port}    || 6667;
+    $self->{channel} = $args->{channel} || [];
+    $self->{_nick} =
+      $args->{nick} || join( '', map { ( "a" .. "z" )[ rand 26 ] } 1 .. 8 );
     return $self;
 }
 
@@ -28,14 +30,23 @@ sub connect {
     connect( $self->{_sock},
         pack_sockaddr_in( $self->{_port}, inet_aton( $self->{_server} ) ) )
       or die "connect: $!";
+		$self->login;
 }
 
 sub login {
     my $self = shift;
     my $sock = $self->{_sock};
-    send( $sock, "NICK $self->{_nick}\r\n",                    0 );
+    send( $sock, "NICK $self->{_nick}\r\n", 0 );
     send( $sock, "USER $self->{_nick} 8 * $self->{_nick}\r\n", 0 );
-    send( $sock, "JOIN #mehfoo\r\n",                            0 );
+}
+
+sub join_chan {
+    my $self = shift;
+    my $sock = $self->{_sock};
+    foreach my $chan ( @{ $self->{channel} } ) {
+        send( $sock, "JOIN $chan\r\n", 0 );
+    }
+
 }
 
 sub read {
