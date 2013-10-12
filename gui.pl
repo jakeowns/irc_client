@@ -20,9 +20,17 @@ my $client = IRC->new(
 
 my $mw        = new MainWindow;
 my $main_menu = $mw->Menu();
-$mw->configure( -menu => $main_menu );
-my $file_menu =
-  $main_menu->cascade( -label => "File", -underline => 0, -tearoff => 0 );
+$main_menu->configure(
+    -foreground => 'gray',
+    -background => 'black',
+);
+$mw->geometry("500x450");
+$mw->configure( -menu => $main_menu, );
+my $file_menu = $main_menu->cascade(
+    -label     => "File",
+    -underline => 0,
+    -tearoff   => 0,
+);
 $file_menu->command(
     -label     => "Connect",
     -underline => 0,
@@ -34,16 +42,26 @@ $file_menu->command(
     -command   => sub { exit }
 );
 $mw->title("IRC Client");
-$mw->geometry("500x450");
-my $t = $mw->Text( -state => 'disabled' )
-  ->pack( -fill => 'both', -expand => 1, -side => 'top' );
-my $entry = $mw->Entry()->pack( -side => 'left', -fill => 'x', -expand => 1 );
+my $t = $mw->Scrolled(
+    'Text',
+    -scrollbars => 'osoe',
+    -foreground => 'gray',
+    -background => 'black',
+    -wrap       => 'word',
+    -state      => 'disabled'
+)->pack( -fill => 'both', -expand => 1, -side => 'top', -anchor => 'w' );
+
+my $entry = $mw->Entry()->pack(
+    -side   => 'left',
+    -fill   => 'x',
+    -expand => 1,
+);
 $entry->focus();
 $entry->bind( '<Return>', \&send_sock );
 $mw->Button(
     -text    => 'Send',
     -command => \&send_sock,
-)->pack;
+)->pack( -side => "right", );
 
 center_window($mw);
 
@@ -62,7 +80,8 @@ sub send_sock {
 }
 
 sub get {
-    write_t( $client->read );
+    $_ = $client->read;
+    write_t($_) if $_;
 }
 
 sub write_t {

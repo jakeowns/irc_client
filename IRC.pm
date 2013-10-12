@@ -30,7 +30,7 @@ sub connect {
     connect( $self->{_sock},
         pack_sockaddr_in( $self->{_port}, inet_aton( $self->{_server} ) ) )
       or die "connect: $!";
-		$self->login;
+    $self->login;
 }
 
 sub login {
@@ -55,6 +55,7 @@ sub read {
     while (<$sock>) {
         if (/^PING(.*)$/i) {
             send( $sock, "PONG $1\r\n", 0 );
+            return;
         }
         else {
             return $_;
