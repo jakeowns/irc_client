@@ -4,7 +4,12 @@ use warnings;
 use Tk;
 use Tk::DynaTabFrame;
 use IRC;
+use IRC::CMD;
 use Socket qw(PF_INET SOCK_STREAM);
+use IO::Handle;
+
+use feature qw(say);
+
 socket( my $sock, PF_INET, SOCK_STREAM, 0 )
   or die "socket: $!";
 my $client = IRC->new(
@@ -12,9 +17,12 @@ my $client = IRC->new(
         sock    => $sock,
         server  => "irc.perl.org",
         port    => 6667,
+	nick	=> "foobar",
         channel => ['#perl']
     }
 );
+
+my %chans;
 
 #$client->connect;
 #$client->join_chan;
@@ -39,21 +47,11 @@ $file_menu->command(
     -command   => sub { exit }
 );
 $mw->title("IRC Client");
+
 my $tab_mw =
   $mw->DynaTabFrame()->pack( -side => 'top', -expand => 1, -fill => 'both' );
-my $tab_1 = $tab_mw->add(
-    -caption  => 'Tab 1',
-    -tabcolor => 'red',
-    -hidden   => 0
-);
-my $t = $tab_1->Scrolled(
-    'Text',
-    -scrollbars => 'osoe',
-    -foreground => 'gray',
-    -background => 'black',
-    -wrap       => 'word',
-    -state      => 'disabled'
-)->pack( -fill => 'both', -expand => 1, -side => 'top', -anchor => 'nw' );
+
+new_tab('main');
 
 my $entry = $mw->Entry()->pack(
     -side   => 'left',
@@ -68,6 +66,7 @@ $mw->Button(
 )->pack( -side => "right", );
 
 center_window($mw);
+$sock->autoflush(1);
 
 MainLoop;
 
@@ -77,23 +76,52 @@ sub menu_connect {
 }
 
 sub send_sock {
-    my $cmd = $entry->get() . "\n";
-    write_t("$cmd");
-    $client->write($cmd);
+    my $cmd = $entry->get() . "\r\n";
+    if ( $cmd =~ m/^\/(.*$)/ ) {
+        $cmd = IRC::CMD->get($1);
+        if ( $cmd =~ m/^join #(.*$)/ ) {
+            new_tab($1);
+        }
+        #else {
+            #if ( $cmd =~ m/^privmsg #(.*) :(.*)/ ) {
+                #write_t( $1, "$2" );
+            #}
+        #}
+	say $cmd;
+    	$client->write($cmd);
+    }
+    else {
+	my $curr = $tab_mw->raised_name();
+    	$client->write("PRIVMSG #$curr :$cmd");
+    	write_t("$curr" , "$cmd" );
+    	say "---PRIVMSG #$curr :$cmd---";
+    }
+
+    #write_t($t, "$cmd");
     $entry->delete( 0, 'end' );
 }
 
 sub get {
     $_ = $client->read;
-    write_t($_) if $_;
+
+    if($_) {
+say '^^^'.$_;
+	    if( m/^:(.*)!~.* PRIVMSG #(.*) :(.*$)/){
+		write_t("$2", "$1 :$3");
+	    }else {
+		write_t('main', "$_");
+	    }
+    }
 }
 
 sub write_t {
-    my $str = shift;
-    $t->configure( -state => 'normal' );
-    $t->insert( 'end', $str );
-    $t->see('end');
-    $t->configure( -state => 'disabled' );
+    my $x = $chans{ $_[0] };
+	say '>'.$_[0];
+	say '>>*'.$_[1];
+    $x->configure( -state => 'normal' );
+    $x->insert( 'end', $_[1] );
+    $x->see('end');
+    $x->configure( -state => 'disabled' );
 }
 
 sub center_window {
@@ -106,12 +134,21 @@ sub center_window {
     $window->update;
     return;
 }
+
+sub new_tab {
+    $chans{ $_[0] } = $tab_mw->add(
+        -caption  => "$_[0]",
+        -tabcolor => 'red',
+        -hidden   => 0
+      )->Scrolled(
+        'Text',
+        -scrollbars => 'osoe',
+        -foreground => 'gray',
+        -background => 'black',
+        -wrap       => 'word',
+        -state      => 'disabled'
+      );
+    $chans{ $_[0] }
+      ->pack( -fill => 'both', -expand => 1, -side => 'top', -anchor => 'nw' );
+}
 __END__
-my $t = $mw->Scrolled(
-    'Text',
-    -scrollbars => 'osoe',
-    -foreground => 'gray',
-    -background => 'black',
-    -wrap       => 'word',
-    -state      => 'disabled'
-)->pack( -fill => 'both', -expand => 1, -side => 'top', -anchor => 'w' );
