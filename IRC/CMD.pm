@@ -14,7 +14,7 @@ sub get {
         case 'q' : { "quit"; }
 	case 'k' : { "kick $arg"; }
 	case 'a' : { "away"; }
-	case "cpm" : { "cprivmsg" $arg"; }
+	case "cpm" : { "cprivmsg $arg"; }
 	case 'h' : { "help"; }
 	case 'i' : { "invite $arg"; }
 	case 'l' : { "list $arg"; }
