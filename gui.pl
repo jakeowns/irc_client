@@ -6,9 +6,6 @@ use Tk::DynaTabFrame;
 use IRC;
 use IRC::CMD;
 use Socket qw(PF_INET SOCK_STREAM);
-use IO::Handle;
-
-use feature qw(say);
 
 socket( my $sock, PF_INET, SOCK_STREAM, 0 )
   or die "socket: $!";
@@ -17,7 +14,7 @@ my $client = IRC->new(
         sock    => $sock,
         server  => "irc.perl.org",
         port    => 6667,
-	nick	=> "foobar",
+        nick    => "foobar",
         channel => ['#perl']
     }
 );
@@ -66,7 +63,6 @@ $mw->Button(
 )->pack( -side => "right", );
 
 center_window($mw);
-$sock->autoflush(1);
 
 MainLoop;
 
@@ -76,25 +72,22 @@ sub menu_connect {
 }
 
 sub send_sock {
-    my $cmd = $entry->get() . "\r\n";
-    if ( $cmd =~ m/^\/(.*$)/ ) {
+    $_ = $entry->get();
+    s/\x{d}//g;    #remove metachars
+    my $cmd = $_;
+    if ( $cmd =~ m/^\/(.*)$/ ) {
         $cmd = IRC::CMD->get($1);
-        if ( $cmd =~ m/^join #(.*$)/ ) {
+        if ( $cmd =~ m/^join #(.*)$/ ) {
             new_tab($1);
         }
-        #else {
-            #if ( $cmd =~ m/^privmsg #(.*) :(.*)/ ) {
-                #write_t( $1, "$2" );
-            #}
-        #}
-	say $cmd;
-    	$client->write($cmd);
+        $client->write( $cmd . "\r\n" );
     }
     else {
-	my $curr = $tab_mw->raised_name();
-    	$client->write("PRIVMSG #$curr :$cmd");
-    	write_t("$curr" , "$cmd" );
-    	say "---PRIVMSG #$curr :$cmd---";
+        my $curr = $tab_mw->raised_name();
+
+        #s/\x{d}//g; #remove metachars
+        $client->write("PRIVMSG #$curr :$cmd\r\n");
+        write_t( $curr, "ME: " . $cmd . "\n" );
     }
 
     #write_t($t, "$cmd");
@@ -104,20 +97,19 @@ sub send_sock {
 sub get {
     $_ = $client->read;
 
-    if($_) {
-say '^^^'.$_;
-	    if( m/^:(.*)!~.* PRIVMSG #(.*) :(.*$)/){
-		write_t("$2", "$1 :$3");
-	    }else {
-		write_t('main', "$_");
-	    }
+    s/\x{d}//g;    #remove metachars
+    if ($_) {
+        if (m/^:(.*)!~.* PRIVMSG #(.*) :(.*\n)$/) {
+            write_t( "$2", "$1: $3" );
+        }
+        else {
+            write_t( 'main', "$_" );
+        }
     }
 }
 
 sub write_t {
     my $x = $chans{ $_[0] };
-	say '>'.$_[0];
-	say '>>*'.$_[1];
     $x->configure( -state => 'normal' );
     $x->insert( 'end', $_[1] );
     $x->see('end');
