@@ -135,8 +135,8 @@ sub new_tab {
       )->Scrolled(
         'Text',
         -scrollbars => 'osoe',
-        -foreground => 'gray',
-        -background => 'black',
+        -foreground => 'black',
+        -background => 'white',
         -wrap       => 'word',
         -state      => 'disabled'
       );
