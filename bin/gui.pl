@@ -16,7 +16,7 @@ my $client = IRC->new(
         sock    => $sock,
         server  => "irc.perl.org",
         port    => 6667,
-        nick    => "foobar",
+        nick    => "foobar1241",
         channel => ['#perl']
     }
 );
@@ -98,15 +98,18 @@ sub send_sock {
 
 sub get {
     $_ = $client->read;
-
     s/\x{d}//g;    #remove metachars
+    my $tab_is = 'main';
     if ($_) {
         if (m/^:(.*)!~.* PRIVMSG #(.*) :(.*\n)$/) {
-            write_t( "$2", "$1: $3" );
+            write_t( $2, "$1: $3" );
+            $tab_is = $2;
+
         }
         else {
-            write_t( 'main', "$_" );
+            write_t( $tab_is, $_ );
         }
+        $tab_mw->flash($tab_is) if ( $tab_is ne $tab_mw->raised_name() );
     }
 }
 
@@ -132,7 +135,7 @@ sub center_window {
 sub new_tab {
     $chans{ $_[0] } = $tab_mw->add(
         -caption  => "$_[0]",
-        -tabcolor => 'red',
+        -tabcolor => 'white',
         -hidden   => 0
       )->Scrolled(
         'Text',
