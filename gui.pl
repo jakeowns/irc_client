@@ -140,6 +140,7 @@ sub new_tab {
         -wrap       => 'word',
         -state      => 'disabled'
       );
+      $tab_mw->flash($tab_mw->raised_name, -color => 'yellow', -interval => 350, -duration => 5000);
     $chans{ $_[0] }
       ->pack( -fill => 'both', -expand => 1, -side => 'top', -anchor => 'nw' );
 }
