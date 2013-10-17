@@ -131,7 +131,7 @@ sub new_tab {
     $chans{ $_[0] } = $tab_mw->add(
         -caption  => "$_[0]",
         -tabcolor => 'red',
-        -hidden   => 0
+        -hidden   => 0,
       )->Scrolled(
         'Text',
         -scrollbars => 'osoe',
@@ -140,6 +140,7 @@ sub new_tab {
         -wrap       => 'word',
         -state      => 'disabled'
       );
+      $tab_mw->flash($tab_mw->raised_name, -color => 'yellow', -interval => 350, -duration => 5000);
     $chans{ $_[0] }
       ->pack( -fill => 'both', -expand => 1, -side => 'top', -anchor => 'nw' );
 }
