@@ -131,7 +131,7 @@ sub new_tab {
     $chans{ $_[0] } = $tab_mw->add(
         -caption  => "$_[0]",
         -tabcolor => 'red',
-        -hidden   => 0,
+        -hidden   => 0
       )->Scrolled(
         'Text',
         -scrollbars => 'osoe',
