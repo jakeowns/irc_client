@@ -4,7 +4,7 @@ function cpan_install() {
 	perl -M$1 -e 1 > /dev/null 2>&1
 	if [ $? -ne 0 ]
 	then
-		cpan install $1
+		cpan -i $1
 	else
 		echo "$1 already installed"
 	fi
@@ -18,5 +18,4 @@ fi
 
 cpan_install "Tk"
 cpan_install "Tk::DynaTabFrame"
-cpan_install "Switch"
 cpan_install "Switch::Plain"
