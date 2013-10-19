@@ -4,6 +4,8 @@ then
 	echo "This script requires root or sudo to run!";
 	exit 1;
 else
+	apt-get update
+	apt-get install libx11-dev
 	cpan App::cpanminus;
 fi
 #install dependencies into ./local
