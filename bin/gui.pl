@@ -1,11 +1,10 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+use lib qw(./lib ../lib ./local/lib/perl5/ ../local/lib/perl5/);
 use Tk;
 use Tk::DynaTabFrame;
 use Socket qw(PF_INET SOCK_STREAM);
-
-use lib qw(./lib ../lib);
 use IRC;
 use IRC::CMD;
 
