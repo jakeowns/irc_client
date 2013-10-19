@@ -1,5 +1,6 @@
 use strict;
 use warnings;
+
 package IRC;
 use Socket qw(pack_sockaddr_in inet_aton);
 
@@ -19,9 +20,9 @@ sub _init {
     $self->{_sock}   = $args->{sock}    || die "no socket: $!";
     $self->{_server} = $args->{server}  || "irc.freenode.net";
     $self->{_port}   = $args->{port}    || 6667;
-    $self->{channel} = $args->{channel} || [];
-    $self->{_nick} =
-      $args->{nick} || join( '', map { ( "a" .. "z" )[ rand 26 ] } 1 .. 8 );
+    $self->{_channel} = $args->{channel} || [];
+    $self->{_nick}   = $args->{nick}
+      || join( '', map { ( "a" .. "z" )[ rand 26 ] } 1 .. 8 );
     return $self;
 }
 
@@ -43,7 +44,7 @@ sub login {
 sub join_chan {
     my $self = shift;
     my $sock = $self->{_sock};
-    foreach my $chan ( @{ $self->{channel} } ) {
+    foreach my $chan ( @{ $self->{_channel} } ) {
         send( $sock, "JOIN $chan\r\n", 0 );
     }
 
@@ -67,5 +68,10 @@ sub write {
     my $self = shift;
     my $sock = $self->{_sock};
     send( $sock, $_[0], 0 );
+}
+
+sub get_nick {
+    my $self = shift;
+    return $self->{_nick};
 }
 1;
