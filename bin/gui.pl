@@ -14,7 +14,7 @@ socket( my $sock, PF_INET, SOCK_STREAM, 0 )
 my $client = IRC->new(
     {
         sock    => $sock,
-        server  => "irc.perl.org",
+        server  => shift || "irc.perl.org",
         port    => 6667,
         nick    => "foobar1241",
         channel => ['#perl']
@@ -89,7 +89,7 @@ sub send_sock {
 
         #s/\x{d}//g; #remove metachars
         $client->write("PRIVMSG #$curr :$cmd\r\n");
-        write_t( $curr, "ME: " . $cmd . "\n" );
+        write_t( $curr, $client->get_nick.": " . $cmd . "\n" );
     }
 
     #write_t($t, "$cmd");
