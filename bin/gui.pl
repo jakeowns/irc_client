@@ -46,17 +46,17 @@ $file_menu->command(
 );
 $mw->title("IRC Client");
 
+my $entry = $mw->Entry();
 my $tab_mw =
-  $mw->DynaTabFrame()->pack( -side => 'top', -expand => 1, -fill => 'both' );
+  $mw->DynaTabFrame( -tabclose => \&tab_close, -raisecmd => \&refocus )->pack( -side => 'top', -expand => 1, -fill => 'both' );
 
 new_tab('main');
 
-my $entry = $mw->Entry()->pack(
+$entry->pack(
     -side   => 'left',
     -fill   => 'x',
     -expand => 1,
 );
-$entry->focus();
 $entry->bind( '<Return>', \&send_sock );
 $mw->Button(
     -text    => 'Send',
@@ -67,9 +67,22 @@ center_window($mw);
 
 MainLoop;
 
+sub tab_close {
+    my ($obj, $caption) = @_;
+    if ($caption ne "main") {
+        $obj->delete($caption);
+    }
+    $client->write("PART #$caption\r\n");
+}
+
+sub refocus {
+    $entry->focus();
+}
+
 sub menu_connect {
     $client->connect;
     $mw->fileevent( $sock, 'readable', \&get );
+    refocus();
 }
 
 sub send_sock {
@@ -80,6 +93,7 @@ sub send_sock {
         $cmd = IRC::CMD->get($1);
         if ( $cmd =~ m/^join #(.*)$/ ) {
             new_tab($1);
+            refocus();
         }
         $client->write( $cmd . "\r\n" );
     }
