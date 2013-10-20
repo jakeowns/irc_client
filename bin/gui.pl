@@ -47,7 +47,7 @@ $file_menu->command(
 $mw->title("IRC Client");
 
 my $tab_mw =
-  $mw->DynaTabFrame( -tabclose => 1 )->pack( -side => 'top', -expand => 1, -fill => 'both' );
+  $mw->DynaTabFrame( -tabclose => \&tabClose )->pack( -side => 'top', -expand => 1, -fill => 'both' );
 
 new_tab('main');
 
@@ -65,6 +65,13 @@ $mw->Button(
 center_window($mw);
 
 MainLoop;
+
+sub tabClose {
+    my ($obj, $caption) = @_;
+    if ($caption ne "main") {
+        $obj->delete($caption);
+    }
+}
 
 sub refocus {
     $entry->focus();
