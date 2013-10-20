@@ -56,7 +56,6 @@ my $entry = $mw->Entry()->pack(
     -fill   => 'x',
     -expand => 1,
 );
-$entry->focus();
 $entry->bind( '<Return>', \&send_sock );
 $mw->Button(
     -text    => 'Send',
@@ -67,9 +66,14 @@ center_window($mw);
 
 MainLoop;
 
+sub refocus {
+    $entry->focus();
+}
+
 sub menu_connect {
     $client->connect;
     $mw->fileevent( $sock, 'readable', \&get );
+    refocus();
 }
 
 sub send_sock {
@@ -80,6 +84,7 @@ sub send_sock {
         $cmd = IRC::CMD->get($1);
         if ( $cmd =~ m/^join #(.*)$/ ) {
             new_tab($1);
+            refocus();
         }
         $client->write( $cmd . "\r\n" );
     }
