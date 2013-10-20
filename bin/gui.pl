@@ -89,20 +89,21 @@ sub send_sock {
     $_ = $entry->get();
     s/\x{d}//g;    #remove metachars
     my $cmd = $_;
-    if ( $cmd =~ m/^\/(.*)$/ ) {
-        $cmd = IRC::CMD->get($1);
-        if ( $cmd =~ m/^join #(.*)$/ ) {
-            new_tab($1);
-            refocus();
-        }
-        $client->write( $cmd . "\r\n" );
-    }
-    else {
-        my $curr = $tab_mw->raised_name();
+    if ( $cmd ne "" ) {
+        if ( $cmd =~ m/^\/(.*)$/ ) {
+            $cmd = IRC::CMD->get($1);
+            if ( $cmd =~ m/^join #(.*)$/ ) {
+                new_tab($1);
+                refocus();
+            }
+            $client->write( $cmd . "\r\n" );
+        } else {
+            my $curr = $tab_mw->raised_name();
 
-        #s/\x{d}//g; #remove metachars
-        $client->write("PRIVMSG #$curr :$cmd\r\n");
-        write_t( $curr, $client->get_nick.": " . $cmd . "\n" );
+            #s/\x{d}//g; #remove metachars
+            $client->write("PRIVMSG #$curr :$cmd\r\n");
+            write_t( $curr, $client->get_nick.": " . $cmd . "\n" );
+        }
     }
 
     #write_t($t, "$cmd");
