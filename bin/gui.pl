@@ -46,12 +46,13 @@ $file_menu->command(
 );
 $mw->title("IRC Client");
 
+my $entry = $mw->Entry();
 my $tab_mw =
-  $mw->DynaTabFrame( -tabclose => \&tab_close )->pack( -side => 'top', -expand => 1, -fill => 'both' );
+  $mw->DynaTabFrame( -tabclose => \&tab_close, -raisecmd => \&refocus )->pack( -side => 'top', -expand => 1, -fill => 'both' );
 
 new_tab('main');
 
-my $entry = $mw->Entry()->pack(
+$entry->pack(
     -side   => 'left',
     -fill   => 'x',
     -expand => 1,
