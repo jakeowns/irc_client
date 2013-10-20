@@ -72,7 +72,7 @@ sub tab_close {
     if ($caption ne "main") {
         $obj->delete($caption);
     }
-    $client->write("PART \#$caption\r\n");
+    $client->write("PART #$caption\r\n");
 }
 
 sub refocus {
