@@ -1,20 +1,21 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+use lib qw(./lib ../lib ./local/lib/perl5/ ../local/lib/perl5/);
 use Tk;
 use Tk::DynaTabFrame;
+use Socket qw(PF_INET SOCK_STREAM);
 use IRC;
 use IRC::CMD;
-use Socket qw(PF_INET SOCK_STREAM);
 
 socket( my $sock, PF_INET, SOCK_STREAM, 0 )
   or die "socket: $!";
 my $client = IRC->new(
     {
         sock    => $sock,
-        server  => "irc.perl.org",
+        server  => shift || "irc.perl.org",
         port    => 6667,
-        nick    => "foobar",
+        nick    => "foobar1241",
         channel => ['#perl']
     }
 );
@@ -45,17 +46,18 @@ $file_menu->command(
 );
 $mw->title("IRC Client");
 
+my $entry = $mw->Entry();
 my $tab_mw =
-  $mw->DynaTabFrame()->pack( -side => 'top', -expand => 1, -fill => 'both' );
+  $mw->DynaTabFrame( -tabclose => \&tab_close, -raisecmd => \&refocus )
+  ->pack( -side => 'top', -expand => 1, -fill => 'both' );
 
 new_tab('main');
 
-my $entry = $mw->Entry()->pack(
+$entry->pack(
     -side   => 'left',
     -fill   => 'x',
     -expand => 1,
 );
-$entry->focus();
 $entry->bind( '<Return>', \&send_sock );
 $mw->Button(
     -text    => 'Send',
@@ -66,46 +68,65 @@ center_window($mw);
 
 MainLoop;
 
+sub tab_close {
+    my ( $obj, $caption ) = @_;
+    if ( $caption ne "main" ) {
+        $obj->delete($caption);
+	undef %chans{$caption};
+        $client->write("PART #$caption\r\n");
+    } else {
+	exit if keys %chans > 1;
+    }
+}
+
+sub refocus {
+    sleep 1;
+    $entry->focus();
+}
+
 sub menu_connect {
     $client->connect;
     $mw->fileevent( $sock, 'readable', \&get );
+    refocus();
 }
 
 sub send_sock {
     $_ = $entry->get();
     s/\x{d}//g;    #remove metachars
     my $cmd = $_;
-    if ( $cmd =~ m/^\/(.*)$/ ) {
-        $cmd = IRC::CMD->get($1);
-        if ( $cmd =~ m/^join #(.*)$/ ) {
-            new_tab($1);
+    if ( $cmd ne "" ) {
+        if ( $cmd =~ m/^\/(.*)$/ ) {
+            $cmd = IRC::CMD->get($1);
+            if ( $cmd =~ m/^join #(.*)$/ ) {
+                new_tab($1);
+                refocus();
+            }
+            $client->write( $cmd . "\r\n" );
         }
-        $client->write( $cmd . "\r\n" );
-    }
-    else {
-        my $curr = $tab_mw->raised_name();
-
-        #s/\x{d}//g; #remove metachars
-        $client->write("PRIVMSG #$curr :$cmd\r\n");
-        write_t( $curr, "ME: " . $cmd . "\n" );
+        else {
+            my $curr = $tab_mw->raised_name();
+            $client->write("PRIVMSG #$curr :$cmd\r\n");
+            write_t( $curr, $client->get_nick . ": " . $cmd . "\n" );
+        }
     }
 
-    #write_t($t, "$cmd");
     $entry->delete( 0, 'end' );
 }
 
 sub get {
     $_ = $client->read;
-
     s/\x{d}//g;    #remove metachars
-    if ($_) {
-        if (m/^:(.*)!~.* PRIVMSG #(.*) :(.*\n)$/) {
-            write_t( "$2", "$1: $3" );
-        }
-        else {
-            write_t( 'main', "$_" );
-        }
+    my $tab_is = 'main';    #default output
+    next unless defined($_);    #ignore blank input
+    if (m/^:(.*)!~.* PRIVMSG #(.*) :(.*\n)$/) {
+        write_t( $2, "$1: $3" );
+        $tab_is = $2;
+
     }
+    else {
+        write_t( $tab_is, $_ );
+    }
+    $tab_mw->flash($tab_is) if ( $tab_is ne $tab_mw->raised_name() );
 }
 
 sub write_t {
@@ -130,7 +151,7 @@ sub center_window {
 sub new_tab {
     $chans{ $_[0] } = $tab_mw->add(
         -caption  => "$_[0]",
-        -tabcolor => 'red',
+        -tabcolor => 'white',
         -hidden   => 0
       )->Scrolled(
         'Text',

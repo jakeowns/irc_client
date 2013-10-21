@@ -1,9 +1,10 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use IRC;
 use Socket qw(PF_INET SOCK_STREAM);
 use IO::Select;
+use lib '../lib';
+use IRC;
 socket( my $sock, PF_INET, SOCK_STREAM, 0 )
   or die "socket: $!";
 my $client =
