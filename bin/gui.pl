@@ -72,6 +72,17 @@ sub tab_close {
     if ($caption ne "main") {
         $obj->delete($caption);
         $client->write("PART #$caption\r\n");
+    } else {
+        my $tabs = $obj->cget(-tabs);
+        my $exitCode = 1;
+        for my $key ( keys %$tabs ) {
+            if ( $key ne "main" ) {
+               $exitCode = 0;
+            }
+        }
+        if ( $exitCode ) {
+            exit
+        }
     }
 }
 
