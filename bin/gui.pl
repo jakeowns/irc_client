@@ -72,7 +72,7 @@ sub tab_close {
     my ( $obj, $caption ) = @_;
     if ( $caption ne "main" ) {
         $obj->delete($caption);
-	undef %chans{$caption};
+	undef $chans{$caption};
         $client->write("PART #$caption\r\n");
     } else {
 	exit if keys %chans > 1;
