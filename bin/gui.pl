@@ -48,7 +48,8 @@ $mw->title("IRC Client");
 
 my $entry = $mw->Entry();
 my $tab_mw =
-  $mw->DynaTabFrame( -tabclose => \&tab_close, -raisecmd => \&refocus )->pack( -side => 'top', -expand => 1, -fill => 'both' );
+  $mw->DynaTabFrame( -tabclose => \&tab_close, -raisecmd => \&refocus )
+  ->pack( -side => 'top', -expand => 1, -fill => 'both' );
 
 new_tab('main');
 
@@ -68,14 +69,15 @@ center_window($mw);
 MainLoop;
 
 sub tab_close {
-    my ($obj, $caption) = @_;
-    if ($caption ne "main") {
+    my ( $obj, $caption ) = @_;
+    if ( $caption ne "main" ) {
         $obj->delete($caption);
         $client->write("PART #$caption\r\n");
     }
 }
 
 sub refocus {
+    sleep 1;
     $entry->focus();
 }
 
@@ -97,34 +99,31 @@ sub send_sock {
                 refocus();
             }
             $client->write( $cmd . "\r\n" );
-        } else {
+        }
+        else {
             my $curr = $tab_mw->raised_name();
-
-            #s/\x{d}//g; #remove metachars
             $client->write("PRIVMSG #$curr :$cmd\r\n");
-            write_t( $curr, $client->get_nick.": " . $cmd . "\n" );
+            write_t( $curr, $client->get_nick . ": " . $cmd . "\n" );
         }
     }
 
-    #write_t($t, "$cmd");
     $entry->delete( 0, 'end' );
 }
 
 sub get {
     $_ = $client->read;
     s/\x{d}//g;    #remove metachars
-    my $tab_is = 'main';
-    if ($_) {
-        if (m/^:(.*)!~.* PRIVMSG #(.*) :(.*\n)$/) {
-            write_t( $2, "$1: $3" );
-            $tab_is = $2;
+    my $tab_is = 'main';    #default output
+    next unless defined($_);    #ignore blank input
+    if (m/^:(.*)!~.* PRIVMSG #(.*) :(.*\n)$/) {
+        write_t( $2, "$1: $3" );
+        $tab_is = $2;
 
-        }
-        else {
-            write_t( $tab_is, $_ );
-        }
-        $tab_mw->flash($tab_is) if ( $tab_is ne $tab_mw->raised_name() );
     }
+    else {
+        write_t( $tab_is, $_ );
+    }
+    $tab_mw->flash($tab_is) if ( $tab_is ne $tab_mw->raised_name() );
 }
 
 sub write_t {
