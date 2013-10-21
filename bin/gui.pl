@@ -72,18 +72,10 @@ sub tab_close {
     my ( $obj, $caption ) = @_;
     if ( $caption ne "main" ) {
         $obj->delete($caption);
+	undef %chans{$caption};
         $client->write("PART #$caption\r\n");
     } else {
-        my $tabs = $obj->cget(-tabs);
-        my $exitCode = 1;
-        for my $key ( keys %$tabs ) {
-            if ( $key ne "main" ) {
-               $exitCode = 0;
-            }
-        }
-        if ( $exitCode ) {
-            exit
-        }
+	exit if keys %chans > 1;
     }
 }
 
