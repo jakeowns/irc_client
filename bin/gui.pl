@@ -46,7 +46,7 @@ $file_menu->command(
 );
 $mw->title("IRC Client");
 
-my $entry = $mw->Entry();
+my $entry = $mw->Entry( -state => 'disabled' );
 my $tab_mw =
   $mw->DynaTabFrame( -tabclose => \&tab_close, -raisecmd => \&refocus )
   ->pack( -side => 'top', -expand => 1, -fill => 'both' );
@@ -72,15 +72,14 @@ sub tab_close {
     my ( $obj, $caption ) = @_;
     if ( $caption ne "main" ) {
         $obj->delete($caption);
-	undef $chans{$caption};
+	delete $chans{$caption};
         $client->write("PART #$caption\r\n");
     } else {
-	exit if keys %chans > 1;
+	exit if scalar(keys %chans) == 1;
     }
 }
 
 sub refocus {
-    sleep 1;
     $entry->focus();
 }
 
