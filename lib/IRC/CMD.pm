@@ -18,7 +18,7 @@ sub get {
         case 'cpm' : { "cprivmsg $arg"; }
         case 'h'   : { "help"; }
         case 'i'   : { "invite $arg"; }
-        case 'l'   : { "list $arg"; }
+        case 'l'   : { "list"; }
         case 'm'   : { "mode $arg"; }
         case 'n'   : { "nick $arg"; }
         case 'nt'  : { "notice $arg"; }
