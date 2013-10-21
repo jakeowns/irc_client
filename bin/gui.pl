@@ -86,6 +86,7 @@ sub refocus {
 sub menu_connect {
     $client->connect;
     $mw->fileevent( $sock, 'readable', \&get );
+    $entry->configure( -state => 'normal' );
     refocus();
 }
 
@@ -97,7 +98,11 @@ sub send_sock {
         if ( $cmd =~ m/^\/(.*)$/ ) {
             $cmd = IRC::CMD->get($1);
             if ( $cmd =~ m/^join #(.*)$/ ) {
-                new_tab($1);
+		if($chans{$1}) {
+		 $tab_mw->raise($1);
+		} else {
+               	 new_tab($1); 
+		}
                 refocus();
             }
             $client->write( $cmd . "\r\n" );
