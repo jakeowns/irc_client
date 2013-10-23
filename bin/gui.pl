@@ -8,7 +8,10 @@ use Socket qw(PF_INET SOCK_STREAM);
 use IRC;
 use IRC::CMD;
 
-my ( %chans, $mw, $mw_button ,$main_menu ,$file_menu ,$entry ,$tab_mw, $sock, $client);
+my (
+    %chans, $mw,     $mw_button, $main_menu, $file_menu,
+    $entry, $tab_mw, $sock,      $client
+);
 
 #$client->connect;
 #$client->join_chan;
@@ -16,79 +19,79 @@ my ( %chans, $mw, $mw_button ,$main_menu ,$file_menu ,$entry ,$tab_mw, $sock, $c
 __PACKAGE__->run unless caller();
 
 sub run {
-	init();
-	pack_gui();
-	MainLoop;
+    init();
+    pack_gui();
+    MainLoop;
 }
 
 sub init {
-	socket( $sock, PF_INET, SOCK_STREAM, 0 )
-	  or die "socket: $!";
-	$client = IRC->new(
-	    {
-		sock    => $sock,
-		server  => shift || "irc.perl.org",
-		port    => 6667,
-		nick    => "foobar1241",
-		channel => ['#perl']
-	    }
-	);
-	$mw        = new MainWindow;
-	$main_menu = $mw->Menu();
-	$mw->geometry("500x450");
-	$mw->configure( -menu => $main_menu, );
-	$file_menu = $main_menu->cascade(
-	    -label     => "File",
-	    -underline => 0,
-	    -tearoff   => 0,
-	);
-	$file_menu->command(
-	    -label     => "Connect",
-	    -underline => 0,
-	    -command   => \&menu_connect
-	);
-	$file_menu->command(
-	    -label     => "Exit",
-	    -underline => 0,
-	    -command   => sub { exit }
-	);
-	$mw->title("IRC Client");
+    socket( $sock, PF_INET, SOCK_STREAM, 0 )
+      or die "socket: $!";
+    $client = IRC->new(
+        {
+            sock    => $sock,
+            server  => shift || "irc.perl.org",
+            port    => 6667,
+            nick    => "foobar1241",
+            channel => ['#perl']
+        }
+    );
+    $mw        = new MainWindow;
+    $main_menu = $mw->Menu();
+    $mw->geometry("500x450");
+    $mw->configure( -menu => $main_menu, );
+    $file_menu = $main_menu->cascade(
+        -label     => "File",
+        -underline => 0,
+        -tearoff   => 0,
+    );
+    $file_menu->command(
+        -label     => "Connect",
+        -underline => 0,
+        -command   => \&menu_connect
+    );
+    $file_menu->command(
+        -label     => "Exit",
+        -underline => 0,
+        -command   => sub { exit }
+    );
+    $mw->title("IRC Client");
 
-	$entry = $mw->Entry( -state => 'disabled' );
-	$tab_mw =
-	  $mw->DynaTabFrame( -tabclose => \&tab_close, -raisecmd => \&refocus );
+    $entry = $mw->Entry( -state => 'disabled' );
+    $tab_mw =
+      $mw->DynaTabFrame( -tabclose => \&tab_close, -raisecmd => \&refocus );
 
-	new_tab('main');
+    new_tab('main');
 
-	$entry->bind( '<Return>', \&send_sock );
-	$mw_button = $mw->Button(
-	    -text    => 'Send',
-	    -command => \&send_sock,
-	);
+    $entry->bind( '<Return>', \&send_sock );
+    $mw_button = $mw->Button(
+        -text    => 'Send',
+        -command => \&send_sock,
+    );
 
-	center_window($mw);
+    center_window($mw);
 }
 
 sub pack_gui {
-	$tab_mw->pack( -side => 'top', -expand => 1, -fill => 'both' );
-	$entry->pack(
-	    -side   => 'left',
-	    -fill   => 'x',
-	    -expand => 1,
-	);
-	$mw_button->pack( -side => "right", );
+    $tab_mw->pack( -side => 'top', -expand => 1, -fill => 'both' );
+    $entry->pack(
+        -side   => 'left',
+        -fill   => 'x',
+        -expand => 1,
+    );
+    $mw_button->pack( -side => "right", );
 }
-
 
 #begin sub
 sub tab_close {
     my ( $obj, $caption ) = @_;
     if ( $caption ne "main" ) {
         $obj->delete($caption);
-	delete $chans{$caption};
+        delete $chans{$caption};
         $client->write("PART #$caption\r\n");
-    } else {
-	exit if scalar(keys %chans) == 1;
+    }
+    else {
+        exit if scalar( keys %chans ) == 1;
     }
 }
 
@@ -111,7 +114,7 @@ sub send_sock {
         if ( $cmd =~ m/^\/(.*)$/ ) {
             $cmd = IRC::CMD->get($1);
             if ( $cmd =~ m/^join #(.*)$/ ) {
-		($chans{$1}) ? $tab_mw->raise($1) : new_tab($1); 
+                ( $chans{$1} ) ? $tab_mw->raise($1) : new_tab($1);
                 refocus();
             }
             $client->write( $cmd . "\r\n" );
