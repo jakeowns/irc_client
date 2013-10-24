@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+package IRC::GUI;
 use lib qw(./lib ../lib ./local/lib/perl5/ ../local/lib/perl5/);
 use Tk;
 use Tk::DynaTabFrame;
