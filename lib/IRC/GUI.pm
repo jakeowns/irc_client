@@ -177,9 +177,9 @@ sub send_sock {
 
 sub get {
     $_ = $client->read;
-    s/\x{d}//g;    #remove metachars
     my $tab_is = 'main';    #default output
-    next unless defined($_);    #ignore blank input
+    return unless defined($_) and length($_);    #ignore blank input
+    s/\x{d}//g;    #remove metachars
     if (m/^:(.*)!~.* PRIVMSG #(.*) :(.*\n)$/) {
         write_t( $2, "$1: $3" );
         $tab_is = $2;
