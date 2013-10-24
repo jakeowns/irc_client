@@ -17,11 +17,11 @@ sub DESTROY {
 
 sub _init {
     my ( $self, $args ) = @_;
-    $self->{_sock}   = $args->{sock}    || die "no socket: $!";
-    $self->{_server} = $args->{server}  || "irc.freenode.net";
-    $self->{_port}   = $args->{port}    || 6667;
+    $self->{_sock}    = $args->{sock}    || die "no socket: $!";
+    $self->{_server}  = $args->{server}  || "irc.freenode.net";
+    $self->{_port}    = $args->{port}    || 6667;
     $self->{_channel} = $args->{channel} || [];
-    $self->{_nick}   = $args->{nick}
+    $self->{_nick}    = $args->{nick}
       || join( '', map { ( "a" .. "z" )[ rand 26 ] } 1 .. 8 );
     return $self;
 }

@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+
 package IRC::GUI;
 use lib qw(./lib ../lib ./local/lib/perl5/ ../local/lib/perl5/);
 use Tk;
@@ -10,9 +11,10 @@ use IRC;
 use IRC::CMD;
 
 my (
-    %chans, $mw,     $mw_button, $main_menu, $file_menu,
-    $entry, $tab_mw, $sock,      $client, $connect_frame, $server_entry,
-    $nick_entry, $connect_button
+    %chans,     $mw,            $mw_button,    $main_menu,
+    $file_menu, $entry,         $tab_mw,       $sock,
+    $client,    $connect_frame, $server_entry, $nick_entry,
+    $connect_button
 );
 
 #$client->connect;
@@ -23,7 +25,8 @@ __PACKAGE__->run unless caller();
 sub run {
     init_gui();
     pack_gui();
- #   init();
+
+    #   init();
     MainLoop;
 }
 
@@ -35,14 +38,14 @@ sub init {
             sock    => $sock,
             server  => $server_entry->get() || 'irc.perl.org',
             port    => 6667,
-            nick    => $nick_entry->get()   || 'foobar1241',
+            nick    => $nick_entry->get() || 'foobar1241',
             channel => ['#perl']
         }
     );
 }
 
 sub init_gui {
-    $mw        = new MainWindow;
+    $mw = new MainWindow;
     $mw->geometry("500x450");
     $mw->title("IRC Client");
 
@@ -61,15 +64,15 @@ sub init_gui {
     );
 
     $connect_frame = $mw->Frame();
-    $server_entry = $connect_frame->Entry( -state => 'normal',);
+    $server_entry = $connect_frame->Entry( -state => 'normal', );
     $server_entry->insert( 'end', 'irc.freenode.net' );
 
-    $nick_entry = $connect_frame->Entry( -state => 'normal',);
-    $nick_entry->insert( 'end','guest12415' );
+    $nick_entry = $connect_frame->Entry( -state => 'normal', );
+    $nick_entry->insert( 'end', 'guest12415' );
 
     $connect_button = $connect_frame->Button(
-	-text    => 'Connect',
-	-command => \&connect_action,
+        -text    => 'Connect',
+        -command => \&connect_action,
     );
 
     $entry = $mw->Entry( -state => 'disabled' );
@@ -90,12 +93,12 @@ sub init_gui {
 sub pack_gui {
     $connect_frame->pack( -side => 'top', -fill => 'x' );
 
-    $connect_frame->Label(-text => 'Server')->pack( -side => 'left' );
-    $server_entry->pack(  -side => 'left' );
-    $connect_frame->Label(-text => 'Nickname')->pack( -side => 'left' );
+    $connect_frame->Label( -text => 'Server' )->pack( -side => 'left' );
+    $server_entry->pack( -side => 'left' );
+    $connect_frame->Label( -text => 'Nickname' )->pack( -side => 'left' );
     $nick_entry->pack( -side => 'left' );
 
-    $connect_button->pack(-side => 'right');
+    $connect_button->pack( -side => 'right' );
     $tab_mw->pack( -side => 'top', -expand => 1, -fill => 'both' );
     $entry->pack(
         -side   => 'left',
@@ -106,12 +109,14 @@ sub pack_gui {
 }
 
 sub con_switch {
-    my $state = ($connect_button->cget( -text ) eq "Connect") ?
-                        ["Disconnect", "disabled"] : ["Connect", "normal"];
-    $connect_button->configure(-text => @$state[0]);
-    $server_entry->configure(-state => @$state[1]);
-    $nick_entry->configure(-state => @$state[1]);
-    return (@$state[0] eq "Connect") ? 0 : 1;
+    my $state =
+        ( $connect_button->cget( -text ) eq "Connect" )
+      ? [ "Disconnect", "disabled" ]
+      : [ "Connect", "normal" ];
+    $connect_button->configure( -text => @$state[0] );
+    $server_entry->configure( -state => @$state[1] );
+    $nick_entry->configure( -state => @$state[1] );
+    return ( @$state[0] eq "Connect" ) ? 0 : 1;
 }
 
 #begin sub
@@ -132,15 +137,15 @@ sub refocus {
 }
 
 sub connect_action {
-    if(con_switch) {
+    if (con_switch) {
         init();
         $client->connect;
         $mw->fileevent( $sock, 'readable', \&get );
         $entry->configure( -state => 'normal' );
         refocus();
     }
-     else {
-        $client->write( "DISCONNECT" . "\r\n");
+    else {
+        $client->write( "DISCONNECT" . "\r\n" );
         $entry->configure( -state => 'disable' );
         $client->DESTROY;
         undef $client;
