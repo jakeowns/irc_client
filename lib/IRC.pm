@@ -10,10 +10,10 @@ sub new {
     return $self->_init($args);
 }
 
-#sub DESTROY {
-#my $self = shift;
-#close( $self->{_sock} ) if $self->{_sock};
-#}
+sub DESTROY {
+    my $self = shift;
+    close( $self->{_sock} ) if $self->{_sock};
+}
 
 sub _init {
     my ( $self, $args ) = @_;

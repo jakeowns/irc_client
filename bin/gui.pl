@@ -104,6 +104,15 @@ sub pack_gui {
     $mw_button->pack( -side => "right", );
 }
 
+sub con_switch {
+    my $state = ($connect_button->cget( -text ) eq "Connect") ?
+                        ["Disconnect", "disabled"] : ["Connect", "normal"];
+    $connect_button->configure(-text => @$state[0]);
+    $server_entry->configure(-state => @$state[1]);
+    $nick_entry->configure(-state => @$state[1]);
+    return (@$state[0] eq "Connect") ? 0 : 1;
+}
+
 #begin sub
 sub tab_close {
     my ( $obj, $caption ) = @_;
@@ -122,11 +131,18 @@ sub refocus {
 }
 
 sub connect_action {
-    init();
-    $client->connect;
-    $mw->fileevent( $sock, 'readable', \&get );
-    $entry->configure( -state => 'normal' );
-    refocus();
+    if(con_switch) {
+        init();
+        $client->connect;
+        $mw->fileevent( $sock, 'readable', \&get );
+        $entry->configure( -state => 'normal' );
+        refocus();
+    }
+     else {
+        $client->write( "DISCONNECT" . "\r\n");
+        $client->DESTROY;
+        undef $client;
+    }
 }
 
 sub send_sock {
