@@ -10,7 +10,8 @@ use IRC::CMD;
 
 my (
     %chans, $mw,     $mw_button, $main_menu, $file_menu,
-    $entry, $tab_mw, $sock,      $client
+    $entry, $tab_mw, $sock,      $client, $connect_frame, $server_entry,
+    $nick_entry, $connect_button
 );
 
 #$client->connect;
@@ -19,8 +20,9 @@ my (
 __PACKAGE__->run unless caller();
 
 sub run {
-    init();
+    init_gui();
     pack_gui();
+ #   init();
     MainLoop;
 }
 
@@ -30,15 +32,21 @@ sub init {
     $client = IRC->new(
         {
             sock    => $sock,
-            server  => shift || "irc.perl.org",
+            server  => $server_entry->get() || 'irc.perl.org',
             port    => 6667,
-            nick    => "foobar1241",
+            nick    => $nick_entry->get()   || 'foobar1241',
             channel => ['#perl']
         }
     );
+}
+
+sub init_gui {
     $mw        = new MainWindow;
-    $main_menu = $mw->Menu();
     $mw->geometry("500x450");
+    $mw->title("IRC Client");
+
+    $main_menu = $mw->Menu();
+
     $mw->configure( -menu => $main_menu, );
     $file_menu = $main_menu->cascade(
         -label     => "File",
@@ -46,16 +54,22 @@ sub init {
         -tearoff   => 0,
     );
     $file_menu->command(
-        -label     => "Connect",
-        -underline => 0,
-        -command   => \&menu_connect
-    );
-    $file_menu->command(
         -label     => "Exit",
         -underline => 0,
         -command   => sub { exit }
     );
-    $mw->title("IRC Client");
+
+    $connect_frame = $mw->Frame();
+    $server_entry = $connect_frame->Entry( -state => 'normal',);
+    $server_entry->insert( 'end', 'irc.freenode.net' );
+
+    $nick_entry = $connect_frame->Entry( -state => 'normal',);
+    $nick_entry->insert( 'end','guest12415' );
+
+    $connect_button = $connect_frame->Button(
+	-text    => 'Connect',
+	-command => \&connect_action,
+    );
 
     $entry = $mw->Entry( -state => 'disabled' );
     $tab_mw =
@@ -73,6 +87,14 @@ sub init {
 }
 
 sub pack_gui {
+    $connect_frame->pack( -side => 'top', -fill => 'x' );
+
+    $connect_frame->Label(-text => 'Server')->pack( -side => 'left' );
+    $server_entry->pack(  -side => 'left' );
+    $connect_frame->Label(-text => 'Nickname')->pack( -side => 'left' );
+    $nick_entry->pack( -side => 'left' );
+
+    $connect_button->pack(-side => 'right');
     $tab_mw->pack( -side => 'top', -expand => 1, -fill => 'both' );
     $entry->pack(
         -side   => 'left',
@@ -99,7 +121,8 @@ sub refocus {
     $entry->focus();
 }
 
-sub menu_connect {
+sub connect_action {
+    init();
     $client->connect;
     $mw->fileevent( $sock, 'readable', \&get );
     $entry->configure( -state => 'normal' );
