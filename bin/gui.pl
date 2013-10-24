@@ -140,6 +140,7 @@ sub connect_action {
     }
      else {
         $client->write( "DISCONNECT" . "\r\n");
+        $entry->configure( -state => 'disable' );
         $client->DESTROY;
         undef $client;
     }
