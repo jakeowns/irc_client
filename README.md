@@ -1,15 +1,33 @@
-<h1>Internet Relay Chat Client</h1>
+Internet Relay Chat Client
+==========================
 
-<p>Internet Relay Chat provides a way of communicating in real time with people from all over the world. It consists of various separate networks of IRC servers, machine that allows users to connect to IRC. IRC is very similar to text message, but designed around communicating with large groups of users instead of one on one.</p>
+Description
+-----------
 
-<h3>Version History</h3>
-<ul>
-	<li>10/22/2013: initial release v1.0</li>
-</ul>
+Internet Relay Chat provides a way of communicating in real time with people from all over the world. It consists of various separate networks of IRC servers, machine that allows users to connect to IRC. IRC is very similar to text message, but designed around communicating with large groups of users instead of one on one.
 
-<h3>Usage</h3>
-<ul>
-	<li>Connects to any IRC server of your choice</li>
-	<li>Communicate with other IRC users</li>
-	<li>A friendly and easy to use GUI</li>
-</ul>
+Version History
+---------------
+
+* 10/22/2013: initial release v1.0
+
+
+Installation
+------------
+
+	./install.sh
+
+Usage
+-----
+
+	./run.sh
+
+
+* Connects to any IRC server of your choice
+* Communicate with other IRC users
+* A friendly and easy to use GUI
+
+License
+-------
+
+Artistic License 2.0 ([link](https://github.com/jakeowns/irc_client/blob/master/LICENSE))
