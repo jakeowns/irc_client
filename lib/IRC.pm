@@ -25,6 +25,11 @@ has 'nick' => (
     default => join( '', map { ( "a" .. "z" )[ rand 26 ] } 1 .. 8 ),
 );
 
+sub DEMOLISH {
+    my $self = shift;
+    close( $self->{sock} ) if $self->{sock};
+}
+
 sub connect {
     my $self = shift;
     connect( $self->{sock},
