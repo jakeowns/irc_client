@@ -1,10 +1,14 @@
 package IRC;
 use strict;
 use warnings;
-use Socket qw(pack_sockaddr_in inet_aton);
 use Moose;
+use Socket qw(pack_sockaddr_in inet_aton PF_INET SOCK_STREAM);
 
-has 'sock' => ( is => 'ro', );
+has 'sock' => (
+    is      => 'ro',
+    builder => '_build_sock',
+    required=> 1,
+);
 has 'server' => (
     is      => 'ro',
     isa     => 'Str',
@@ -28,6 +32,12 @@ has 'nick' => (
 sub DEMOLISH {
     my $self = shift;
     close( $self->{sock} ) if $self->{sock};
+}
+
+sub _build_sock {
+    socket( my $sock, PF_INET, SOCK_STREAM, 0 )
+      or die "socket: $!";
+    return $sock;
 }
 
 sub connect {
@@ -57,14 +67,16 @@ sub join_chan {
 sub read {
     my $self = shift;
     my $sock = $self->{sock};
-    while (<$sock>) {
-        if (/^PING(.*)$/i) {
-            send( $sock, "PONG $1\r\n", 0 );
-            return;
-        }
-        else {
-            return $_;
-        }
+    my $line;
+    my $stat = sysread($sock, $line, 10240);
+    return unless( defined $stat );
+    $_ = $line;
+    if (/^PING(.*)$/i) {
+        $self->write( "PONG $1\r\n" );
+        return;
+    }
+    else {
+        return $_;
     }
 }
 
@@ -72,10 +84,5 @@ sub write {
     my $self = shift;
     my $sock = $self->{sock};
     send( $sock, $_[0], 0 );
-}
-
-sub get_nick {
-    my $self = shift;
-    return $self->{nick};
 }
 1;

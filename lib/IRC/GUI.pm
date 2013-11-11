@@ -6,39 +6,29 @@ package IRC::GUI;
 use lib qw(./lib ../lib ./local/lib/perl5/ ../local/lib/perl5/);
 use Tk;
 use Tk::DynaTabFrame;
-use Socket qw(PF_INET SOCK_STREAM);
 use IRC;
 use IRC::CMD;
 
 my (
-    %chans,     $mw,            $mw_button,    $main_menu,
-    $file_menu, $entry,         $tab_mw,       $sock,
-    $client,    $connect_frame, $server_entry, $nick_entry,
-    $connect_button
+    %chans,         $mw,           $mw_button,  $main_menu,
+    $file_menu,     $entry,        $tab_mw,     $client,
+    $connect_frame, $server_entry, $nick_entry, $connect_button
 );
-
-#$client->connect;
-#$client->join_chan;
 
 __PACKAGE__->run unless caller();
 
 sub run {
     init_gui();
     pack_gui();
-
-    #   init();
     MainLoop;
 }
 
 sub init {
-    socket( $sock, PF_INET, SOCK_STREAM, 0 )
-      or die "socket: $!";
     $client = IRC->new(
         {
-            sock    => $sock,
-            server  => $server_entry->get() || 'irc.perl.org',
+            server  => $server_entry->get(),
             port    => 6667,
-            nick    => $nick_entry->get() || 'foobar1241',
+            nick    => $nick_entry->get(),
             channel => ['#perl']
         }
     );
@@ -140,7 +130,7 @@ sub connect_action {
     if (con_switch) {
         init();
         $client->connect;
-        $mw->fileevent( $sock, 'readable', \&get );
+        $mw->fileevent( $client->sock, 'readable', => \&get);
         $entry->configure( -state => 'normal' );
         refocus();
     }
@@ -176,7 +166,9 @@ sub send_sock {
 }
 
 sub get {
-    $_ = $client->read;
+    my $str = $client->read;
+    return unless defined $str;
+    $_ = $str;
     my $tab_is = 'main';    #default output
     return unless defined($_) and length($_);    #ignore blank input
     s/\x{d}//g;    #remove metachars
