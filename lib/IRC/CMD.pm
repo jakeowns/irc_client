@@ -3,6 +3,12 @@ use warnings;
 
 package IRC::CMD;
 use Switch::Plain;
+use Parse::IRC;
+
+sub parse {
+    my $class = shift;
+    return parse_irc($_);
+}
 
 sub get {
     my $class = shift;

@@ -8,6 +8,7 @@ use Tk;
 use Tk::DynaTabFrame;
 use IRC;
 use IRC::CMD;
+use Data::Dumper;
 
 my (
     %chans,         $mw,           $mw_button,  $main_menu,
@@ -115,7 +116,7 @@ sub tab_close {
     if ( $caption ne "main" ) {
         $obj->delete($caption);
         delete $chans{$caption};
-        $client->write("PART #$caption\r\n");
+        $client->write("PART $caption\r\n");
     }
     else {
         exit if scalar( keys %chans ) == 1;
@@ -149,7 +150,7 @@ sub send_sock {
     if ( $cmd ne "" ) {
         if ( $cmd =~ m/^\/(.*)$/ ) {
             $cmd = IRC::CMD->get($1);
-            if ( $cmd =~ m/^join #(.*)$/ ) {
+            if ( $cmd =~ m/^join (#.*)$/ ) {
                 ( $chans{$1} ) ? $tab_mw->raise($1) : new_tab($1);
                 refocus();
             }
@@ -167,23 +168,25 @@ sub send_sock {
 
 sub get {
     my $str = $client->read;
-    return unless defined $str;
-    $_ = $str;
+    return unless defined $str and length($str);
     my $tab_is = 'main';    #default output
-    return unless defined($_) and length($_);    #ignore blank input
-    s/\x{d}//g;    #remove metachars
-    if (m/^:(.*)!~.* PRIVMSG #(.*) :(.*\n)$/) {
-        write_t( $2, "$1: $3" );
-        $tab_is = $2;
-
+    my $parsed =  IRC::CMD->parse($str);
+    my $cmd  = $parsed->{command};
+    if ( defined($cmd) and $cmd eq "PRIVMSG" ) {
+	my ( $chan, $msg ) = @{ $parsed->{params} };
+	$parsed->{prefix} =~ /(.*)!~?/;
+        write_t( $chan, "$1: $msg" . "\n" );
+        $tab_is = $chan;
     }
     else {
+        $_ = $str; s/\x{d}//g;    #remove metachars
         write_t( $tab_is, $_ );
     }
     $tab_mw->flash($tab_is) if ( $tab_is ne $tab_mw->raised_name() );
 }
 
 sub write_t {
+    new_tab($_[0]) unless $chans{ $_[0] };
     my $x = $chans{ $_[0] };
     $x->configure( -state => 'normal' );
     $x->insert( 'end', $_[1] );
