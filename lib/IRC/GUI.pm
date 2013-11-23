@@ -3,12 +3,10 @@ use strict;
 use warnings;
 
 package IRC::GUI;
-use lib qw(./lib ../lib ./local/lib/perl5/ ../local/lib/perl5/);
 use Tk;
 use Tk::DynaTabFrame;
 use IRC;
 use IRC::CMD;
-use Data::Dumper;
 
 my (
     %chans,         $mw,           $mw_button,  $main_menu,
@@ -221,4 +219,4 @@ sub new_tab {
     $chans{ $_[0] }
       ->pack( -fill => 'both', -expand => 1, -side => 'top', -anchor => 'nw' );
 }
-__END__
+1;
