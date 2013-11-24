@@ -31,3 +31,8 @@ License
 -------
 
 Artistic License 2.0 ([link](https://github.com/jakeowns/irc_client/blob/master/LICENSE))
+
+Screenshots
+-----------
+
+![link](https://raw.github.com/jakeowns/irc_client/blob/master/screenshots/screenshot-00.png)
