@@ -35,4 +35,5 @@ Artistic License 2.0 ([link](https://github.com/jakeowns/irc_client/blob/master/
 Screenshots
 -----------
 
-![link](https://github.com/jakeowns/irc_client/blob/master/screenshots/screenshot-00.png?raw=true)
+![Message of the day](https://github.com/jakeowns/irc_client/blob/master/screenshots/screenshot-00.png?raw=true)
+![Join #foo](https://github.com/jakeowns/irc_client/blob/master/screenshots/screenshot-01.png?raw=true)
