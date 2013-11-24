@@ -35,4 +35,4 @@ Artistic License 2.0 ([link](https://github.com/jakeowns/irc_client/blob/master/
 Screenshots
 -----------
 
-![link](https://raw.github.com/jakeowns/irc_client/blob/master/screenshots/screenshot-00.png)
+![link](https://github.com/jakeowns/irc_client/blob/master/screenshots/screenshot-00.png)
