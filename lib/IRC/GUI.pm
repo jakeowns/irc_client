@@ -115,7 +115,9 @@ sub tab_close {
     if ( $caption ne "main" ) {
         $obj->delete($caption);
         delete $chans{$caption};
-        $client->write("PART $caption\r\n");
+        if( $caption =~ /^#/ ) {
+            $client->write("PART $caption\r\n");
+        }
     }
     else {
         exit if scalar( keys %chans ) == 1;
@@ -170,15 +172,21 @@ sub get {
     return unless defined $str and length($str);
     my $tab_is = 'main';    #default output
     my $parsed =  IRC::CMD->parse($str);
+    print Dumper($parsed);
     my $cmd  = $parsed->{command};
     if ( defined($cmd) and $cmd eq "PRIVMSG" ) {
 	my ( $chan, $msg ) = @{ $parsed->{params} };
 	$parsed->{prefix} =~ /(.*)!~?/;
+        if( $chan eq $client->nick ) {
+            $chan = $1;
+        }
         write_t( $chan, "$1: $msg" . "\n" );
         $tab_is = $chan;
     }
     else {
-        $_ = $str; s/\x{d}//g;    #remove metachars
+        $_ = $str;
+        s/\x{d}//g;    #remove metachars
+        s/:.*?:(.*\n)/$1/g;
         write_t( $tab_is, $_ );
     }
     $tab_mw->flash($tab_is) if ( $tab_is ne $tab_mw->raised_name() );
