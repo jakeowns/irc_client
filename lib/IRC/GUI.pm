@@ -1,18 +1,17 @@
 #!/usr/bin/perl
+package IRC::GUI;
 use strict;
 use warnings;
-
-package IRC::GUI;
 use Tk;
 use Tk::DynaTabFrame;
 use IRC;
 use IRC::CMD;
-use Data::Dumper;
 
 my (
     %chans,         $mw,           $mw_button,  $main_menu,
     $file_menu,     $entry,        $tab_mw,     $client,
-    $connect_frame, $server_entry, $nick_entry, $connect_button
+    $connect_frame, $server_entry, $nick_entry, $connect_button,
+    $sel
 );
 
 __PACKAGE__->run unless caller();
@@ -115,7 +114,7 @@ sub tab_close {
     if ( $caption ne "main" ) {
         $obj->delete($caption);
         delete $chans{$caption};
-        if( $caption =~ /^#/ ) {
+        if ( $caption =~ /^#/ ) {
             $client->write("PART $caption\r\n");
         }
     }
@@ -132,14 +131,22 @@ sub connect_action {
     if (con_switch) {
         init();
         $client->connect;
-        $mw->fileevent( $client->sock, 'readable', => \&get);
+        if ($^O eq 'MSWin32') {
+            use IO::Select;
+            $sel = IO::Select->new;
+            $sel->add( $client->sock );
+            $mw->repeat( 50 => \&get );
+        } else {
+            $mw->fileevent( $client->sock, 'readable' => \&get );
+        }
+        #$mw->fileevent( $client->sock, 'readable', => \&get );
         $entry->configure( -state => 'normal' );
         refocus();
     }
     else {
         $client->write( "DISCONNECT" . "\r\n" );
         $entry->configure( -state => 'disable' );
-	$client->DEMOLISH;
+        $client->DEMOLISH;
         undef $client;
     }
 }
@@ -163,21 +170,23 @@ sub send_sock {
             write_t( $curr, $client->nick . ": " . $cmd . "\n" );
         }
     }
-
     $entry->delete( 0, 'end' );
 }
 
 sub get {
+    if ($^O eq 'MSWin32') {
+        my(@ready) = $sel->can_read(0);
+        return if $#ready == -1;
+    }
     my $str = $client->read;
     return unless defined $str and length($str);
-    my $tab_is = 'main';    #default output
-    my $parsed =  IRC::CMD->parse($str);
-    print Dumper($parsed);
-    my $cmd  = $parsed->{command};
+    my $tab_is = 'main';                  #default output
+    my $parsed = IRC::CMD->parse($str);
+    my $cmd = $parsed->{command};
     if ( defined($cmd) and $cmd eq "PRIVMSG" ) {
-	my ( $chan, $msg ) = @{ $parsed->{params} };
-	$parsed->{prefix} =~ /(.*)!~?/;
-        if( $chan eq $client->nick ) {
+        my ( $chan, $msg ) = @{ $parsed->{params} };
+        $parsed->{prefix} =~ /(.*)!~?/;
+        if ( $chan eq $client->nick ) {
             $chan = $1;
         }
         write_t( $chan, "$1: $msg" . "\n" );
@@ -193,7 +202,7 @@ sub get {
 }
 
 sub write_t {
-    new_tab($_[0]) unless $chans{ $_[0] };
+    new_tab( $_[0] ) unless $chans{ $_[0] };
     my $x = $chans{ $_[0] };
     $x->configure( -state => 'normal' );
     $x->insert( 'end', $_[1] );
