@@ -5,9 +5,9 @@ use Moose;
 use Socket qw(pack_sockaddr_in inet_aton PF_INET SOCK_STREAM);
 
 has 'sock' => (
-    is      => 'ro',
-    builder => '_build_sock',
-    required=> 1,
+    is       => 'ro',
+    builder  => '_build_sock',
+    required => 1,
 );
 has 'server' => (
     is      => 'ro',
@@ -68,11 +68,11 @@ sub read {
     my $self = shift;
     my $sock = $self->{sock};
     my $line;
-    my $stat = sysread($sock, $line, 10240);
-    return unless( defined $stat );
+    my $stat = sysread( $sock, $line, 10240 );
+    return unless ( defined $stat );
     $_ = $line;
     if (/^PING(.*)$/i) {
-        $self->write( "PONG $1\r\n" );
+        $self->write("PONG $1\r\n");
         return;
     }
     else {
