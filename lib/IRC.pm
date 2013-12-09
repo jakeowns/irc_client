@@ -42,8 +42,12 @@ sub _build_sock {
 
 sub connect {
     my $self = shift;
+    my $addr = $self->{server};
+    unless($addr =~ /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/) {
+        $addr = inet_aton( $addr );
+    }
     connect( $self->{sock},
-        pack_sockaddr_in( $self->{port}, inet_aton( $self->{server} ) ) )
+        pack_sockaddr_in( $self->{port}, $addr ) ) )
       or die "connect: $!";
     $self->login;
 }
