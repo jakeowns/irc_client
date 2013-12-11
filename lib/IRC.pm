@@ -47,7 +47,7 @@ sub connect {
         $addr = inet_aton( $addr );
     }
     connect( $self->{sock},
-        pack_sockaddr_in( $self->{port}, $addr ) ) )
+        pack_sockaddr_in( $self->{port}, $addr ) )
       or die "connect: $!";
     $self->login;
 }
